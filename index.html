@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Buttons</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        let wsURL = "ws://localhost:9444"
+        let ws = new WebSocket(wsURL);
+        ws.onopen = function (event) {
+            console.log("Connected to WebSocket server");
+        }
+        function sendEmotion(emotion) {
+            ws.send(JSON.stringify({ emotion }));
+        }
+    </script>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center">
+    <div class="space-y-4">
+        <h1 class="text-3xl font-bold text-center text-white mb-8">How are you feeling?</h1>
+        <div class="grid grid-cols-2 gap-4">
+            <button class="emotion-btn px-6 py-3 bg-yellow-400 text-gray-900 rounded-lg font-semibold transition duration-300 ease-in-out transform hover:scale-105" data-emotion="happy" onclick="sendEmotion('happy')">
+                Happy
+            </button>
+            <button class="emotion-btn px-6 py-3 bg-red-600 text-white rounded-lg font-semibold transition duration-300 ease-in-out transform hover:scale-105" data-emotion="angry" onclick="sendEmotion('angry')">
+                Angry
+            </button>
+            <button class="emotion-btn px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold transition duration-300 ease-in-out transform hover:scale-105" data-emotion="sad" onclick="sendEmotion('sad')">
+                Sad
+            </button>
+            <button class="emotion-btn px-6 py-3 bg-pink-500 text-white rounded-lg font-semibold transition duration-300 ease-in-out transform hover:scale-105" data-emotion="surprise" onclick="sendEmotion('surprise')">
+                Surprise
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const buttons = document.querySelectorAll('.emotion-btn');
+        let selectedButton = null;
+
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (selectedButton) {
+                    // Reset previously selected button
+                    selectedButton.classList.remove('ring-4', 'ring-white', 'scale-110');
+                    selectedButton.classList.add('hover:scale-105');
+                }
+
+                if (selectedButton !== button) {
+                    // Select new button
+                    button.classList.add('ring-4', 'ring-white', 'scale-110');
+                    button.classList.remove('hover:scale-105');
+                    selectedButton = button;
+                } else {
+                    // Deselect if clicking the same button
+                    selectedButton = null;
+                }
+
+                // Animation
+                button.classList.add('animate-pulse');
+                setTimeout(() => {
+                    button.classList.remove('animate-pulse');
+                }, 300);
+
+                // Announce selection for screen readers
+                const emotion = button.getAttribute('data-emotion');
+                const message = selectedButton ? `${emotion} selected` : `${emotion} deselected`;
+                announceForScreenReader(message);
+            });
+        });
+
+        function announceForScreenReader(message) {
+            let announcer = document.getElementById('sr-announcer');
+            if (!announcer) {
+                announcer = document.createElement('div');
+                announcer.id = 'sr-announcer';
+                announcer.setAttribute('aria-live', 'polite');
+                announcer.classList.add('sr-only');
+                document.body.appendChild(announcer);
+            }
+            announcer.textContent = message;
+        }
+    </script>
+</body>
+</html>
